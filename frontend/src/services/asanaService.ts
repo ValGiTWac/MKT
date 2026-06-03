@@ -20,6 +20,9 @@ export const asanaService = {
         ASANA_ENDPOINTS.SYNC_POST,
         data
       );
+      if (!response.data.data) {
+        throw new Error('No Asana task data received');
+      }
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));

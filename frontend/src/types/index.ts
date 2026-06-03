@@ -242,7 +242,7 @@ export interface Notification {
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T | null;
   message?: string;
   error?: string;
   errors?: Record<string, string[]>;
