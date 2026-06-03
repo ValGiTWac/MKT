@@ -82,7 +82,7 @@ export const mistralService = {
           sourceLanguage,
         }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -146,7 +146,7 @@ export const mistralService = {
         MISTRAL_ENDPOINTS.ANALYZE,
         { content }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -206,7 +206,7 @@ export const mistralService = {
         `${MISTRAL_ENDPOINTS.GENERATE}/post`,
         options
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

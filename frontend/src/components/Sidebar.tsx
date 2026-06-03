@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { uiState } from '@/store/atoms';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/utils/helpers';

@@ -122,6 +122,7 @@ export interface Validation {
   approvedAt?: string;
   createdAt: string;
   updatedAt: string;
+  statusDisplay?: string;
 }
 
 export interface ValidationRequest {
@@ -242,7 +243,7 @@ export interface Notification {
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;
-  data: T | null;
+  data?: T;
   message?: string;
   error?: string;
   errors?: Record<string, string[]>;

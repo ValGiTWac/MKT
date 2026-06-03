@@ -27,7 +27,7 @@ export const bufferService = {
         BUFFER_ENDPOINTS.PUBLISH,
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -40,7 +40,7 @@ export const bufferService = {
         BUFFER_ENDPOINTS.SCHEDULE,
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -52,7 +52,7 @@ export const bufferService = {
       const response = await api.get<ApiResponse<BufferProfile[]>>(
         BUFFER_ENDPOINTS.GET_PROFILES
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -82,7 +82,7 @@ export const bufferService = {
       const response = await api.get<ApiResponse<BufferPost>>(
         BUFFER_ENDPOINTS.GET_POST.replace(':id', id)
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -95,7 +95,7 @@ export const bufferService = {
         BUFFER_ENDPOINTS.UPDATE_POST.replace(':id', id),
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -117,7 +117,7 @@ export const bufferService = {
         BUFFER_ENDPOINTS.WEBHOOK,
         { url }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -150,7 +150,7 @@ export const bufferService = {
         BUFFER_ENDPOINTS.ANALYTICS,
         { params }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -190,7 +190,7 @@ export const bufferService = {
           publishNow: true,
         }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -202,7 +202,7 @@ export const bufferService = {
       const response = await api.get<ApiResponse<BufferPost[]>>(
         `${BUFFER_ENDPOINTS.GET_POSTS}/queue`
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

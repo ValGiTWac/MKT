@@ -43,7 +43,7 @@ export const postService = {
       if (!response.data.data) {
         throw new Error('Post not found');
       }
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -59,7 +59,7 @@ export const postService = {
       if (!response.data.data) {
         throw new Error('Failed to create post');
       }
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -72,7 +72,7 @@ export const postService = {
         POST_ENDPOINTS.UPDATE.replace(':id', id),
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -120,7 +120,7 @@ export const postService = {
       const response = await api.get<ApiResponse<Record<string, unknown>>>(
         POST_ENDPOINTS.STATS
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -146,7 +146,7 @@ export const postService = {
         `${POST_ENDPOINTS.UPDATE.replace(':id', id)}/status`,
         { status }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -159,7 +159,7 @@ export const postService = {
         `${POST_ENDPOINTS.CREATE}/duplicate`,
         { postId: id }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

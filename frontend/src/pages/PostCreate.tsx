@@ -6,18 +6,8 @@ import { postService } from '@/services/postService';
 import { mistralService } from '@/services/mistralService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { debounce } from '@/utils/helpers';
-import {
-  Calendar,
-  Clock,
-  Users,
-  Globe,
-  Check,
-  X,
-  Lightbulb,
-  Send,
-  Save,
-} from 'lucide-react';
+import { cn, debounce, formatDate } from '@/utils/helpers';
+import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Platform options
@@ -59,7 +49,6 @@ const lengthOptions = [
 export default function PostCreatePage() {
   const navigate = useNavigate();
   const [editor, setEditor] = useRecoilState(editorState);
-  const [posts, setPosts] = useRecoilState(postsState);
 
   // Form state
   const [title, setTitle] = useState(editor.title || '');
@@ -110,7 +99,7 @@ export default function PostCreatePage() {
 
   useEffect(() => {
     autoSave();
-    return () => autoSave.cancel();
+    return () => {};
   }, [title, content, autoSave]);
 
   // Update word and character count
@@ -221,8 +210,6 @@ export default function PostCreatePage() {
       return;
     }
 
-    const status = action === 'publish' ? 'approved' : action === 'draft' ? 'draft' : 'in_review';
-
     try {
       setIsSaving(true);
       if (action === 'publish') setIsPublishing(true);
@@ -242,12 +229,7 @@ export default function PostCreatePage() {
         },
       });
 
-      // Update local state
-      setPosts((prev) => ({
-        ...prev,
-        posts: [newPost, ...prev.posts],
-        total: prev.total + 1,
-      }));
+      // Reset form
 
       // Reset form
       setTitle('');

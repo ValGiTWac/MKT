@@ -26,17 +26,15 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  asChild?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, children, variant = 'default', size = 'default', isLoading, leftIcon, rightIcon, asChild, ...props },
+    { className, children, variant = 'default', size = 'default', isLoading, leftIcon, rightIcon, ...props },
     ref
   ) => {
-    const Comp = asChild ? 'div' : 'button';
     return (
-      <Comp
+      <button
         className={cn(
           'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
           buttonVariants[variant],
@@ -78,7 +76,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {rightIcon && <span className="ml-2">{rightIcon}</span>}
           </>
         )}
-      </Comp>
+      </button>
     );
   }
 );

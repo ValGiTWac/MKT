@@ -15,17 +15,15 @@ import {
   Search,
   Filter,
   MoreVertical,
-  RefreshCw,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function ValidationsPage() {
   const navigate = useNavigate();
-  const { auth, hasPermission } = useAuth();
   const [validations, setValidations] = useRecoilState(validationsState);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('pending');
+  const [statusFilter, setStatusFilter] = useState<ValidationStatus>('pending');
   const [showFilters, setShowFilters] = useState(false);
 
   // Status options
@@ -52,9 +50,11 @@ export default function ValidationsPage() {
 
       setValidations({
         ...validations,
-        validations: response.data,
-        total: response.pagination.total,
-        pendingValidations: response.data.filter(v => v.status === 'pending'),
+        validations: response.data || [],
+        total: response.pagination?.total || 0,
+        page: response.pagination?.page || 1,
+        pagination: response.pagination,
+        pendingValidations: (response.data || []).filter(v => v.status === 'pending'),
       });
     } catch (error) {
       toast.error('Échec du chargement des validations');
@@ -303,13 +303,11 @@ export default function ValidationsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        asChild
+                        onClick={() => window.location.href = `/posts/${(validation.post as any)?._id || validation.post}`}
                       >
-                        <Link to={`/posts/${(validation.post as any)?._id || validation.post}`}>
-                          <Eye className="w-4 h-4" />
-                        </Link>
+                        <Eye className="w-4 h-4" />
                       </Button>
-                      {validation.status === 'pending' && hasPermission('approve:post') && (
+                      {validation.status === 'pending' && (
                         <>
                           <Button
                             variant="ghost"
@@ -339,8 +337,7 @@ export default function ValidationsPage() {
       </div>
 
       {/* Pending validations for current user */}
-      {hasPermission('approve:post') && (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border dark:border-gray-700">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Mes validations en attente
           </h2>
@@ -394,27 +391,3 @@ export default function ValidationsPage() {
     </div>
   );
 }
-
-// Create a validation service for the frontend
-// This is a temporary implementation - in a real app, this would be in a separate file
-const validationService = {
-  async getAll(params: any) {
-    // In a real app, this would call the API
-    return {
-      data: [],
-      pagination: { total: 0, page: 1, limit: 10 },
-    };
-  },
-  async approve(id: string, comments: string) {
-    // In a real app, this would call the API
-    return { success: true };
-  },
-  async reject(id: string, comments: string) {
-    // In a real app, this would call the API
-    return { success: true };
-  },
-  async requestChanges(id: string, comments: string, changes: string[]) {
-    // In a real app, this would call the API
-    return { success: true };
-  },
-};

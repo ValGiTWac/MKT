@@ -23,7 +23,7 @@ export const asanaService = {
       if (!response.data.data) {
         throw new Error('No Asana task data received');
       }
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -53,7 +53,10 @@ export const asanaService = {
       const response = await api.get<ApiResponse<AsanaTask>>(
         ASANA_ENDPOINTS.GET_TASK.replace(':id', id)
       );
-      return response.data.data;
+      if (!response.data.data) {
+        throw new Error('Asana task not found');
+      }
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -66,7 +69,7 @@ export const asanaService = {
         ASANA_ENDPOINTS.UPDATE_TASK.replace(':id', id),
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -87,7 +90,7 @@ export const asanaService = {
         ASANA_ENDPOINTS.CREATE_PROJECT,
         { name, description }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -107,7 +110,7 @@ export const asanaService = {
       }[]>>(
         ASANA_ENDPOINTS.GET_PROJECTS
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -127,7 +130,7 @@ export const asanaService = {
       }[]>>(
         ASANA_ENDPOINTS.GET_USERS
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -140,7 +143,7 @@ export const asanaService = {
         ASANA_ENDPOINTS.WEBHOOK,
         { url }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

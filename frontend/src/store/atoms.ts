@@ -33,6 +33,10 @@ export interface PostsState {
   limit: number;
   filters: Record<string, unknown>;
   selectedPost: Post | null;
+  pagination?: {
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export const postsState = atom<PostsState>({
@@ -46,6 +50,7 @@ export const postsState = atom<PostsState>({
     limit: 10,
     filters: {},
     selectedPost: null,
+    pagination: { hasNext: false, hasPrev: false },
   },
 });
 
@@ -55,6 +60,12 @@ export interface TranslationsState {
   loading: boolean;
   error: string | null;
   selectedTranslation: Translation | null;
+  total: number;
+  page: number;
+  pagination?: {
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export const translationsState = atom<TranslationsState>({
@@ -64,6 +75,9 @@ export const translationsState = atom<TranslationsState>({
     loading: false,
     error: null,
     selectedTranslation: null,
+    total: 0,
+    page: 1,
+    pagination: { hasNext: false, hasPrev: false },
   },
 });
 
@@ -74,6 +88,12 @@ export interface ValidationsState {
   error: string | null;
   pendingValidations: Validation[];
   selectedValidation: Validation | null;
+  total: number;
+  page: number;
+  pagination?: {
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export const validationsState = atom<ValidationsState>({
@@ -84,6 +104,9 @@ export const validationsState = atom<ValidationsState>({
     error: null,
     pendingValidations: [],
     selectedValidation: null,
+    total: 0,
+    page: 1,
+    pagination: { hasNext: false, hasPrev: false },
   },
 });
 

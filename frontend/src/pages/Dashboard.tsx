@@ -153,8 +153,8 @@ function RecentPostsCard() {
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900 dark:text-white">Posts récents</h3>
         {hasPermission('create:post') && (
-          <Button size="sm" asChild>
-            <Link to="/posts/create">Voir tout</Link>
+          <Button size="sm" onClick={() => window.location.href = '/posts/create'}>
+            Voir tout
           </Button>
         )}
       </div>

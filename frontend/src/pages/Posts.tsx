@@ -27,7 +27,6 @@ import { PostStatus, PostPlatform, PostPriority, SortOptions } from '@/types';
 
 export default function PostsPage() {
   const navigate = useNavigate();
-  const { auth } = useAuth();
   const [posts, setPosts] = useRecoilState(postsState);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -193,12 +192,10 @@ export default function PostsPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {hasPermission('create:post') && (
-            <Button onClick={() => navigate('/posts/create')}>
-              <PlusSquare className="w-4 h-4 mr-2" />
-              Nouveau Post
-            </Button>
-          )}
+          <Button onClick={() => navigate('/posts/create')}>
+            <PlusSquare className="w-4 h-4 mr-2" />
+            Nouveau Post
+          </Button>
         </div>
       </div>
 
@@ -301,36 +298,30 @@ export default function PostsPage() {
               {selectedPosts.length} post(s) sélectionné(s)
             </p>
             <div className="flex items-center gap-2">
-              {hasPermission('approve:post') && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleBulkAction('approve')}
-                >
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                  Approuver
-                </Button>
-              )}
-              {hasPermission('publish:post') && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleBulkAction('publish')}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Publier
-                </Button>
-              )}
-              {hasPermission('delete:post') && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleBulkAction('delete')}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Supprimer
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkAction('approve')}
+              >
+                <CheckSquare className="w-4 h-4 mr-2" />
+                Approuver
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkAction('publish')}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Publier
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleBulkAction('delete')}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer
+              </Button>
             </div>
           </div>
         </div>
@@ -489,32 +480,24 @@ export default function PostsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        asChild
+                        onClick={() => window.location.href = `/posts/${post._id}`}
                       >
-                        <Link to={`/posts/${post._id}`}>
-                          <Eye className="w-4 h-4" />
-                        </Link>
+                        <Eye className="w-4 h-4" />
                       </Button>
-                      {hasPermission('update:post') && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          asChild
-                        >
-                          <Link to={`/posts/${post._id}/edit`}>
-                            <Edit className="w-4 h-4" />
-                          </Link>
-                        </Button>
-                      )}
-                      {hasPermission('delete:post') && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeletePost(post._id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => window.location.href = `/posts/${post._id}/edit`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeletePost(post._id)}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
                     </div>
                   </td>
                 </tr>

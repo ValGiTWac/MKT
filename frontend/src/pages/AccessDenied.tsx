@@ -18,17 +18,13 @@ export default function AccessDeniedPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild variant="outline">
-            <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour à l'accueil
-            </Link>
+          <Button variant="outline" onClick={() => window.location.href = '/'}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour à l'accueil
           </Button>
-          <Button asChild>
-            <Link to="/">
-              <Home className="w-4 h-4 mr-2" />
-              Tableau de bord
-            </Link>
+          <Button onClick={() => window.location.href = '/'}>
+            <Home className="w-4 h-4 mr-2" />
+            Tableau de bord
           </Button>
         </div>
 

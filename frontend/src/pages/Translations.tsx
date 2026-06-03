@@ -14,12 +14,10 @@ import {
   Search,
   Filter,
   Eye,
-  Edit,
   Trash2,
   CheckSquare,
   Clock,
   Magic,
-  RefreshCw,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -48,12 +46,11 @@ const statusOptions = [
 
 export default function TranslationsPage() {
   const navigate = useNavigate();
-  const { auth, hasPermission } = useAuth();
   const [translations, setTranslations] = useRecoilState(translationsState);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<TranslationStatus | 'all'>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedTranslations, setSelectedTranslations] = useState<string[]>([]);
   const [showTranslateModal, setShowTranslateModal] = useState(false);
@@ -71,15 +68,17 @@ export default function TranslationsPage() {
         limit: 50,
         filter: {
           language: languageFilter === 'all' ? undefined : [languageFilter],
-          status: statusFilter === 'all' ? undefined : [statusFilter],
+          status: statusFilter === 'all' ? undefined : [statusFilter as TranslationStatus],
           search: searchQuery || undefined,
         },
       });
 
       setTranslations({
         ...translations,
-        translations: response.data,
-        total: response.pagination.total,
+        translations: response.data || [],
+        total: response.pagination?.total || 0,
+        page: response.pagination?.page || 1,
+        pagination: response.pagination,
       });
     } catch (error) {
       toast.error('Échec du chargement des traductions');
@@ -169,12 +168,10 @@ export default function TranslationsPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {hasPermission('translate:post') && (
-            <Button onClick={() => navigate('/posts')}>
-              <PlusSquare className="w-4 h-4 mr-2" />
-              Nouvelle Traduction
-            </Button>
-          )}
+          <Button onClick={() => navigate('/posts')}>
+            <PlusSquare className="w-4 h-4 mr-2" />
+            Nouvelle Traduction
+          </Button>
         </div>
       </div>
 
@@ -324,16 +321,15 @@ export default function TranslationsPage() {
               {selectedTranslations.length} traduction(s) sélectionnée(s)
             </p>
             <div className="flex items-center gap-2">
-              {hasPermission('translate:post') && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleTranslateWithAI(selectedTranslations[0])}
-                  >
-                    <Magic className="w-4 h-4 mr-2" />
-                    Traduire avec IA
-                  </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTranslateWithAI(selectedTranslations[0])}
+                >
+                  <Magic className="w-4 h-4 mr-2" />
+                  Traduire avec IA
+                </Button>
                   <Button
                     variant="destructive"
                     size="sm"
@@ -451,21 +447,18 @@ export default function TranslationsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        asChild
+                        onClick={() => window.location.href = `/posts/${(translation.post as any)?._id || translation.post}`}
                       >
-                        <Link to={`/posts/${(translation.post as any)?._id || translation.post}`}>
-                          <Eye className="w-4 h-4" />
-                        </Link>
+                        <Eye className="w-4 h-4" />
                       </Button>
-                      {hasPermission('translate:post') && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleTranslateWithAI((translation.post as any)?._id || translation.post)}
-                          >
-                            <Magic className="w-4 h-4" />
-                          </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleTranslateWithAI((translation.post as any)?._id || translation.post)}
+                        >
+                          <Magic className="w-4 h-4" />
+                        </Button>
                           <Button
                             variant="ghost"
                             size="icon"

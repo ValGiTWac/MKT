@@ -40,7 +40,7 @@ export const validationService = {
       const response = await api.get<ApiResponse<Validation>>(
         VALIDATION_ENDPOINTS.GET_BY_ID.replace(':id', id)
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -53,7 +53,7 @@ export const validationService = {
         VALIDATION_ENDPOINTS.CREATE,
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -66,7 +66,7 @@ export const validationService = {
         VALIDATION_ENDPOINTS.UPDATE.replace(':id', id),
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -88,7 +88,7 @@ export const validationService = {
         VALIDATION_ENDPOINTS.APPROVE.replace(':id', id),
         { comments }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -101,7 +101,7 @@ export const validationService = {
         VALIDATION_ENDPOINTS.REJECT.replace(':id', id),
         { comments, changesRequested }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -114,7 +114,7 @@ export const validationService = {
         VALIDATION_ENDPOINTS.REQUEST_CHANGES.replace(':id', id),
         { comments, changesRequested }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -126,7 +126,7 @@ export const validationService = {
       const response = await api.get<ApiResponse<Validation[]>>(
         VALIDATION_ENDPOINTS.GET_BY_POST.replace(':postId', postId)
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -138,7 +138,7 @@ export const validationService = {
       const response = await api.get<ApiResponse<Validation[]>>(
         VALIDATION_ENDPOINTS.GET_PENDING_MY
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

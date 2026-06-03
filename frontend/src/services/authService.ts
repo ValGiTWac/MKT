@@ -37,7 +37,7 @@ export const authService = {
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
       
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -62,7 +62,7 @@ export const authService = {
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(user));
       
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -92,7 +92,7 @@ export const authService = {
       const response = await api.get<ApiResponse<UserProfile>>(
         AUTH_ENDPOINTS.ME
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       // If token is invalid, clear and return null
       if (handleApiError(error).includes('Unauthorized')) {
@@ -111,7 +111,7 @@ export const authService = {
         AUTH_ENDPOINTS.REFRESH,
         { refreshToken }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }

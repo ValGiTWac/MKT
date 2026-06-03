@@ -38,7 +38,7 @@ export const translationService = {
       const response = await api.get<ApiResponse<Translation>>(
         TRANSLATION_ENDPOINTS.GET_BY_ID.replace(':id', id)
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -51,7 +51,7 @@ export const translationService = {
         TRANSLATION_ENDPOINTS.CREATE,
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -64,7 +64,7 @@ export const translationService = {
         TRANSLATION_ENDPOINTS.UPDATE.replace(':id', id),
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -85,7 +85,7 @@ export const translationService = {
       const response = await api.get<ApiResponse<Translation[]>>(
         TRANSLATION_ENDPOINTS.GET_BY_POST.replace(':postId', postId)
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -102,7 +102,7 @@ export const translationService = {
         TRANSLATION_ENDPOINTS.TRANSLATE_WITH_AI,
         data
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -115,7 +115,7 @@ export const translationService = {
         TRANSLATION_ENDPOINTS.UPDATE_STATUS.replace(':id', id),
         { status }
       );
-      return response.data.data;
+      if (!response.data.data) { throw new Error("Data not found"); } return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
