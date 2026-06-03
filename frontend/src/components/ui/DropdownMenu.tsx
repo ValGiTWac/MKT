@@ -155,7 +155,7 @@ DropdownMenuGroup.displayName = DropdownMenuPrimitive.Group.displayName;
 
 const DropdownMenuSub = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Sub>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Sub>
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Sub> & { className?: string }
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Sub
     ref={ref}
