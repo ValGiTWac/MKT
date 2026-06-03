@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { postService } from '@/services/postService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Post } from '@/types';
 
 export default function PostEdit() {
   const { id } = useParams<{ id: string }>();

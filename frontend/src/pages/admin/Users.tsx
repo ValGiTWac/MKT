@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { User, UserRole } from '@/types';
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([
-    { id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin' },
-    { id: '2', name: 'Éditeur', email: 'editor@example.com', role: 'editor' },
+    { _id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin', isActive: true, createdAt: '', updatedAt: '' },
+    { _id: '2', name: 'Éditeur', email: 'editor@example.com', role: 'editor', isActive: true, createdAt: '', updatedAt: '' },
   ]);
 
   const [newUser, setNewUser] = useState<Partial<User>>({ name: '', email: '', role: 'viewer' });
@@ -28,17 +30,17 @@ export default function Users() {
           <Input
             placeholder="Nom"
             value={newUser.name || ''}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewUser({ ...newUser, name: e.target.value })}
           />
           <Input
             placeholder="Email"
             type="email"
             value={newUser.email || ''}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewUser({ ...newUser, email: e.target.value })}
           />
           <select
             value={newUser.role || 'viewer'}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNewUser({ ...newUser, role: e.target.value as UserRole })}
             className="p-2 border rounded"
           >
             <option value="viewer">Spectateur</option>

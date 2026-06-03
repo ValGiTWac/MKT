@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { UserRole } from '@/types';
 
 export default function Profile() {
   const [profile, setProfile] = useState({
@@ -36,7 +37,7 @@ export default function Profile() {
           <label className="block mb-2">Rôle</label>
           <select
             value={profile.role}
-            onChange={(e) => setProfile({ ...profile, role: e.target.value as UserRole })}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setProfile({ ...profile, role: e.target.value as UserRole })}
             className="p-2 border rounded w-full"
           >
             <option value="viewer">Spectateur</option>

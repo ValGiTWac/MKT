@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { uiState } from '@/store/atoms';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/utils/helpers';
@@ -16,7 +16,6 @@ import {
   HelpCircle,
   X,
   Menu,
-  Home,
   Calendar,
   MessageSquare,
   Image,
@@ -120,7 +119,7 @@ const adminItems = [
 
 export default function Sidebar() {
   const [ui, setUi] = useRecoilState(uiState);
-  const { auth, hasPermission } = useAuth();
+  const { auth } = useAuth();
   const location = useLocation();
 
   const toggleSidebar = () => {

@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { authState } from '@/store/atoms';
 import { authService } from '@/services/authService';
 import { User, LoginCredentials, RegisterCredentials, UserProfile } from '@/types';
@@ -197,7 +197,7 @@ export const useAuth = () => {
     (permissions: string[]): boolean => {
       if (!auth.user) return false;
       return permissions.some((permission) =>
-        auth.user.permissions?.includes(permission)
+        auth.user?.permissions?.includes(permission)
       );
     },
     [auth.user]
@@ -208,7 +208,7 @@ export const useAuth = () => {
     (permissions: string[]): boolean => {
       if (!auth.user) return false;
       return permissions.every((permission) =>
-        auth.user.permissions?.includes(permission)
+        auth.user?.permissions?.includes(permission)
       );
     },
     [auth.user]

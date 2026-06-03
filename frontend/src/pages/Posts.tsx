@@ -14,7 +14,6 @@ import {
   Filter,
   SortAsc,
   SortDesc,
-  MoreVertical,
   Eye,
   Edit,
   Trash2,
@@ -24,10 +23,11 @@ import {
   Tag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { PostStatus, PostPlatform, PostPriority, SortOptions } from '@/types';
 
 export default function PostsPage() {
   const navigate = useNavigate();
-  const { auth, hasPermission } = useAuth();
+  const { auth } = useAuth();
   const [posts, setPosts] = useRecoilState(postsState);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,12 +78,12 @@ export default function PostsPage() {
         page: 1,
         limit: 50,
         filter: {
-          status: filters.status.length > 0 ? filters.status : undefined,
-          platform: filters.platform.length > 0 ? filters.platform : undefined,
-          priority: filters.priority.length > 0 ? filters.priority : undefined,
+          status: filters.status.length > 0 ? filters.status as PostStatus[] : undefined,
+          platform: filters.platform.length > 0 ? filters.platform as PostPlatform[] : undefined,
+          priority: filters.priority.length > 0 ? filters.priority as PostPriority[] : undefined,
           search: searchQuery || undefined,
         },
-        sort,
+        sort: sort as SortOptions,
       });
 
       setPosts({
@@ -182,12 +182,7 @@ export default function PostsPage() {
     }
   };
 
-  // Update post status
-  const handleUpdateStatus = async (postId: string, status: string) => {
-    try {
-      await postService.updateStatus(postId, status);
-      toast.success('Statut mis à jour');
-      fetchPosts();
+
     } catch (error) {
       toast.error(`Échec de la mise à jour: ${error instanceof Error ? error.message : 'Erreur'}`);
     }

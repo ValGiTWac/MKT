@@ -2,28 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { editorState, postsState } from '@/store/atoms';
-import { useAuth } from '@/hooks/useAuth';
 import { postService } from '@/services/postService';
 import { mistralService } from '@/services/mistralService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { cn, debounce, formatDate } from '@/utils/helpers';
+import { debounce } from '@/utils/helpers';
 import {
-  Sparkles,
-  Type,
-  Image,
-  Video,
-  Link,
-  Hash,
   Calendar,
   Clock,
   Users,
   Globe,
   Check,
   X,
-  Loader2,
   Lightbulb,
-  Magic,
   Send,
   Save,
 } from 'lucide-react';
@@ -67,7 +58,6 @@ const lengthOptions = [
 
 export default function PostCreatePage() {
   const navigate = useNavigate();
-  const { auth } = useAuth();
   const [editor, setEditor] = useRecoilState(editorState);
   const [posts, setPosts] = useRecoilState(postsState);
 
@@ -133,6 +123,8 @@ export default function PostCreatePage() {
       isDirty: true,
     }));
   }, [content, setEditor]);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   // Generate content with Mistral Vibe
   const generateWithAI = async () => {

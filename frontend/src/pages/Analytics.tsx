@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 export default function Analytics() {
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     posts: 0,
     engagements: 0,
     followers: 0,

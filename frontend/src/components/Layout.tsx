@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { uiState } from '@/store/atoms';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { cn } from '@/utils/helpers';
 
 export default function Layout() {
-  const [ui, setUi] = useRecoilState(uiState);
+  const ui = useRecoilValue(uiState);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 
 export default function Calendar() {
-  const [date, setDate] = useState(new Date());
+  const [date] = useState(new Date());
 
   return (
     <div className="p-6">
