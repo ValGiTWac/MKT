@@ -1,32 +1,22 @@
 import { forwardRef } from 'react';
 import { cn } from '@/utils/helpers';
-import { cva, type VariantProps } from 'class-variance-authority';
 
-const inputVariants = cva(
-  'flex w-full rounded-lg border border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
-  {
-    variants: {
-      variant: {
-        default: '',
-        ghost: 'border-0 bg-transparent focus-visible:ring-0',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  }
-);
+type InputVariant = 'default' | 'ghost';
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement>,
-    VariantProps<typeof inputVariants> {
+const inputVariants: Record<InputVariant, string> = {
+  default: 'flex w-full rounded-lg border border-gray-300 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100',
+  ghost: 'flex w-full rounded-lg border-0 bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-100',
+};
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  variant?: InputVariant;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   error?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, variant, leftIcon, rightIcon, error, ...props }, ref) => {
+  ({ className, type, variant = 'default', leftIcon, rightIcon, error, ...props }, ref) => {
     return (
       <div className="relative">
         {leftIcon && (
@@ -37,9 +27,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           className={cn(
-            inputVariants({ variant, className }),
+            inputVariants[variant],
             leftIcon && 'pl-10',
-            rightIcon && 'pr-10'
+            rightIcon && 'pr-10',
+            className
           )}
           ref={ref}
           {...props}
