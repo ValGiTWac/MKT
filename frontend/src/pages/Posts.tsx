@@ -182,12 +182,6 @@ export default function PostsPage() {
     }
   };
 
-
-    } catch (error) {
-      toast.error(`Échec de la mise à jour: ${error instanceof Error ? error.message : 'Erreur'}`);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
