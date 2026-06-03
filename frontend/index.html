@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="WHISE Marketing Platform - Gestion collaborative des posts social media" />
+    <meta name="theme-color" content="#2563eb" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="WHISE Marketing Platform" />
+    <meta property="og:description" content="Gestion collaborative des posts social media avec Mistral Vibe" />
+    <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="WHISE Marketing Platform" />
+    <meta name="twitter:description" content="Gestion collaborative des posts social media avec Mistral Vibe" />
+    <meta name="twitter:image" content="/og-image.png" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <title>WHISE MKT - Marketing Platform</title>
+    
+    <!-- Environment variables -->
+    <script>
+      window.__ENV__ = {
+        API_URL: import.meta.env.VITE_API_URL || '/api',
+        WS_URL: import.meta.env.VITE_WS_URL || window.location.origin,
+        MISTRAL_VIBE_API_KEY: import.meta.env.VITE_MISTRAL_VIBE_API_KEY || '',
+      };
+    </script>
+  </head>
+  <body class="antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

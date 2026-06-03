@@ -1,0 +1,70 @@
+# Netlify Configuration for WHISE Marketing Platform
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command for the frontend
+  command = "npm run build"
+  
+  # Build directory for the frontend
+  publish = "dist"
+  
+  # Functions directory
+  functions = "functions"
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "18"
+  
+  # Environment variables (can also be set in Netlify UI)
+  NODE_ENV = "production"
+
+# Redirects
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.mistral.ai https://app.asana.com https://api.buffer.com; frame-src https://app.asana.com;"
+
+# Environment variables (these will be set in Netlify UI)
+# MONGODB_URI = "your_mongodb_atlas_connection_string"
+# JWT_SECRET = "your_jwt_secret_key"
+# MISTRAL_VIBE_API_KEY = "your_mistral_vibe_api_key"
+# ASANA_API_KEY = "your_asana_personal_access_token"
+# ASANA_WORKSPACE_ID = "your_asana_workspace_id"
+# BUFFER_API_KEY = "your_buffer_api_token"
+# CLOUDINARY_CLOUD_NAME = "your_cloudinary_cloud_name"
+# CLOUDINARY_API_KEY = "your_cloudinary_api_key"
+# CLOUDINARY_API_SECRET = "your_cloudinary_api_secret"
+
+# Plugins
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  [plugins.inputs]
+    thresholds = { performance = 0.9, accessibility = 0.9, best-practices = 0.9, seo = 0.9 }
+
+# Cache settings
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+[build.processing.images]
+  compress = true
