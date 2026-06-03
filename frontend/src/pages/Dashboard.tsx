@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { dashboardStatsState, postsState } from '@/store/atoms';
 import { useAuth } from '@/hooks/useAuth';
 import { postService } from '@/services/postService';
 import { Button } from '@/components/ui/Button';
-import { cn, formatDate, getPlatformColor, getStatusColor } from '@/utils/helpers';
+import { cn, formatDate, getStatusColor } from '@/utils/helpers';
 import {
   FileText,
   PlusSquare,

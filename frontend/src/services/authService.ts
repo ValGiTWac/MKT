@@ -26,6 +26,10 @@ export const authService = {
         credentials
       );
       
+      if (!response.data.data) {
+        throw new Error('No user data received');
+      }
+      
       const { token, refreshToken, ...user } = response.data.data;
       
       // Store tokens
@@ -46,6 +50,10 @@ export const authService = {
         AUTH_ENDPOINTS.REGISTER,
         data
       );
+      
+      if (!response.data.data) {
+        throw new Error('No user data received');
+      }
       
       const { token, refreshToken, ...user } = response.data.data;
       

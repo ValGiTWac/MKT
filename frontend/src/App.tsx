@@ -62,7 +62,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 // Main App component
 function App() {
-  const [ui, setUi] = useRecoilState(uiState);
+  const [ui] = useRecoilState(uiState);
 
   return (
     <div className={cn('min-h-screen', ui.currentTheme)}>

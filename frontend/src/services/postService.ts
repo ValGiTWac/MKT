@@ -40,6 +40,9 @@ export const postService = {
       const response = await api.get<ApiResponse<Post>>(
         POST_ENDPOINTS.GET_BY_ID.replace(':id', id)
       );
+      if (!response.data.data) {
+        throw new Error('Post not found');
+      }
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -53,6 +56,9 @@ export const postService = {
         POST_ENDPOINTS.CREATE,
         data
       );
+      if (!response.data.data) {
+        throw new Error('Failed to create post');
+      }
       return response.data.data;
     } catch (error) {
       throw new Error(handleApiError(error));

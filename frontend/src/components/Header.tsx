@@ -2,7 +2,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { uiState } from '@/store/atoms';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/utils/helpers';
 import {
   Menu,
   Bell,
