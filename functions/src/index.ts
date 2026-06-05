@@ -12,8 +12,6 @@ dotenv.config();
 import authRoutes from './routes/authRoutes';
 import postRoutes from './routes/postRoutes';
 import mistralRoutes from './routes/mistralRoutes';
-import bufferRoutes from './routes/bufferRoutes';
-import asanaRoutes from './routes/asanaRoutes';
 import userRoutes from './routes/userRoutes';
 
 // Import middleware
@@ -46,8 +44,6 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/mistral', mistralRoutes);
-app.use('/api/buffer', bufferRoutes);
-app.use('/api/asana', asanaRoutes);
 app.use('/api/users', userRoutes);
 
 // 404 handler

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { postService } from '@/services/postService';
-import { mistralService } from '@/services/mistralService';
-import { bufferService } from '@/services/bufferService';
-import { asanaService } from '@/services/asanaService';
-import { Post, SocialPlatform, PostStatus } from '@/types';
+import { mistralService, BufferProfilesResponse, AsanaProjectsResponse } from '@/services/mistralService';
+import { Post, SocialPlatform, PostStatus, BufferProfile, AsanaProject } from '@/types';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import Select from '@/components/Select';
@@ -45,8 +43,8 @@ const PostEditPage: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
-  const [bufferProfiles, setBufferProfiles] = useState<{ id: string; platform: SocialPlatform; name: string }[]>([]);
-  const [asanaProjects, setAsanaProjects] = useState<{ id: string; name: string }[]>([]);
+  const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([]);
+  const [asanaProjects, setAsanaProjects] = useState<AsanaProject[]>([]);
   const [selectedBufferProfile, setSelectedBufferProfile] = useState<string>('');
   const [selectedAsanaProject, setSelectedAsanaProject] = useState<string>('');
   const [createAsanaTask, setCreateAsanaTask] = useState(false);
@@ -78,17 +76,19 @@ const PostEditPage: React.FC = () => {
         const postData = await postService.getPostById(id);
         setPost(postData);
         
-        // Fetch integrations
-        const bufferStatus = await bufferService.checkStatus();
-        if (bufferStatus.connected) {
-          const profiles = await bufferService.getProfiles();
-          setBufferProfiles(profiles || []);
+        // Fetch integrations via Mistral Vibe MCP
+        try {
+          const bufferResponse = await mistralService.getBufferProfiles();
+          setBufferProfiles(bufferResponse.profiles || []);
+        } catch (bufferError) {
+          console.log('Buffer integration not available via Mistral Vibe MCP');
         }
 
-        const asanaStatus = await asanaService.checkStatus();
-        if (asanaStatus.connected) {
-          const projects = await asanaService.getProjects();
-          setAsanaProjects(projects || []);
+        try {
+          const asanaResponse = await mistralService.getAsanaProjects();
+          setAsanaProjects(asanaResponse.projects || []);
+        } catch (asanaError) {
+          console.log('Asana integration not available via Mistral Vibe MCP');
         }
       } catch (error) {
         console.error('Failed to fetch post:', error);
@@ -208,21 +208,43 @@ const PostEditPage: React.FC = () => {
           break;
         case 'publish':
           result = await postService.publishPost(id);
-          // Handle Buffer publishing
+          
+          // Handle Buffer publishing via Mistral Vibe MCP
           if (selectedBufferProfile) {
             const profile = bufferProfiles.find((p) => p.id === selectedBufferProfile);
-            if (profile) {
-              await bufferService.publishPost(
-                profile.id,
-                id,
-                post?.content || '',
-                post?.images
-              );
+            if (profile && post) {
+              await mistralService.publishToBuffer({
+                post: {
+                  text: post.content || '',
+                  mediaUrls: post.images,
+                  platform: profile.platform as 'facebook' | 'twitter' | 'linkedin' | 'instagram' | 'tiktok',
+                },
+                profileId: profile.id,
+              });
+              addNotification({
+                type: 'success',
+                title: 'Publié sur Buffer',
+                message: 'Le post a été publié sur Buffer via Mistral Vibe MCP',
+              });
             }
           }
-          // Handle Asana task creation
+          
+          // Handle Asana task creation via Mistral Vibe MCP
           if (createAsanaTask && selectedAsanaProject) {
-            await asanaService.createTaskFromPost(id, selectedAsanaProject);
+            await mistralService.createAsanaTaskFromPost(id, selectedAsanaProject);
+            addNotification({
+              type: 'success',
+              title: 'Tâche Asana créée',
+              message: 'Une tâche a été créée dans Asana via Mistral Vibe MCP',
+            });
+          } else if (createAsanaTask && !selectedAsanaProject) {
+            // Create task without specific project
+            await mistralService.createAsanaTaskFromPost(id);
+            addNotification({
+              type: 'success',
+              title: 'Tâche Asana créée',
+              message: 'Une tâche a été créée dans Asana via Mistral Vibe MCP',
+            });
           }
           break;
       }
@@ -308,10 +330,13 @@ const PostEditPage: React.FC = () => {
         target_language: targetLanguage,
       });
 
+      // Update post content with translation
+      setPost({ ...post, content: result.translated_text });
+      
       addNotification({
         type: 'info',
         title: 'Traduction',
-        message: `Traduction: ${result.translated_text.substring(0, 100)}...`,
+        message: `Contenu traduit en ${targetLanguage.toUpperCase()}`,
       });
     } catch (error) {
       console.error('Failed to translate content:', error);
@@ -770,34 +795,37 @@ const PostEditPage: React.FC = () => {
 
           {action === 'publish' && (
             <>
-              {/* Buffer Integration */}
+              {/* Buffer Integration via Mistral Vibe MCP */}
               {bufferProfiles.length > 0 && (
                 <div className="p-4 bg-secondary-50 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
                     <Plug size={20} className="text-blue-600" />
-                    <h3 className="font-semibold text-secondary-900">Publier sur Buffer</h3>
+                    <h3 className="font-semibold text-secondary-900">Publier sur Buffer via Mistral Vibe</h3>
                   </div>
                   <Select
-                    label="Sélectionnez un profil"
+                    label="Sélectionnez un profil Buffer"
                     options={[
                       { value: '', label: 'Ne pas publier sur Buffer' },
                       ...bufferProfiles.map((profile) => ({
                         value: profile.id,
-                        label: `${profile.name} (${profile.platform})`,
+                        label: `${profile.name || profile.platformUsername} (${profile.platform})`,
                       })),
                     ]}
                     value={selectedBufferProfile}
                     onChange={(e) => setSelectedBufferProfile(e.target.value)}
                   />
+                  <p className="text-sm text-secondary-500 mt-2">
+                    Mistral Vibe MCP gère la connexion et la publication sur Buffer.
+                  </p>
                 </div>
               )}
 
-              {/* Asana Integration */}
+              {/* Asana Integration via Mistral Vibe MCP */}
               {asanaProjects.length > 0 && (
                 <div className="p-4 bg-secondary-50 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
                     <Users size={20} className="text-orange-600" />
-                    <h3 className="font-semibold text-secondary-900">Créer une tâche Asana</h3>
+                    <h3 className="font-semibold text-secondary-900">Créer une tâche Asana via Mistral Vibe</h3>
                   </div>
                   <div className="space-y-3">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -812,7 +840,7 @@ const PostEditPage: React.FC = () => {
                     
                     {createAsanaTask && (
                       <Select
-                        label="Sélectionnez un projet"
+                        label="Sélectionnez un projet Asana"
                         options={[
                           { value: '', label: 'Projet par défaut' },
                           ...asanaProjects.map((project) => ({
@@ -824,6 +852,9 @@ const PostEditPage: React.FC = () => {
                         onChange={(e) => setSelectedAsanaProject(e.target.value)}
                       />
                     )}
+                    <p className="text-sm text-secondary-500 mt-2">
+                      Mistral Vibe MCP gère la connexion et la création de tâches dans Asana.
+                    </p>
                   </div>
                 </div>
               )}

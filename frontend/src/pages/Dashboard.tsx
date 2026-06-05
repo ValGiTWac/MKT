@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { postService } from '@/services/postService';
-import { bufferService } from '@/services/bufferService';
-import { asanaService } from '@/services/asanaService';
-import { mistralService } from '@/services/mistralService';
-import { Post, DashboardStats, PaginatedResponse } from '@/types';
+import { mistralService, BufferProfilesResponse, AsanaProjectsResponse } from '@/services/mistralService';
+import { Post, DashboardStats, PaginatedResponse, BufferProfile, AsanaProject } from '@/types';
 import Button from '@/components/Button';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -19,6 +17,7 @@ import {
   TrendingUp,
   Plus,
   Eye,
+  Info,
 } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
@@ -26,8 +25,8 @@ const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [bufferStatus, setBufferStatus] = useState<{ active: boolean; connected: boolean }>({ active: false, connected: false });
-  const [asanaStatus, setAsanaStatus] = useState<{ active: boolean; connected: boolean }>({ active: false, connected: false });
+  const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([]);
+  const [asanaProjects, setAsanaProjects] = useState<AsanaProject[]>([]);
   const [mistralStatus, setMistralStatus] = useState<{ active: boolean; model?: string }>({ active: false });
 
   useEffect(() => {
@@ -39,15 +38,25 @@ const DashboardPage: React.FC = () => {
         const postsResponse = await postService.getAllPosts(1, 5);
         setRecentPosts(postsResponse.data);
         
-        // Fetch integration statuses
-        const bufferStatus = await bufferService.checkStatus();
-        setBufferStatus({ active: bufferStatus.active, connected: bufferStatus.connected });
-        
-        const asanaStatus = await asanaService.checkStatus();
-        setAsanaStatus({ active: asanaStatus.active, connected: asanaStatus.connected });
-        
+        // Fetch Mistral Vibe status
         const mistralStatus = await mistralService.checkIntegration();
         setMistralStatus(mistralStatus);
+
+        // Fetch Buffer profiles via Mistral Vibe MCP
+        try {
+          const bufferResponse = await mistralService.getBufferProfiles();
+          setBufferProfiles(bufferResponse.profiles || []);
+        } catch (error) {
+          console.log('Buffer integration not available via Mistral Vibe MCP');
+        }
+
+        // Fetch Asana projects via Mistral Vibe MCP
+        try {
+          const asanaResponse = await mistralService.getAsanaProjects();
+          setAsanaProjects(asanaResponse.projects || []);
+        } catch (error) {
+          console.log('Asana integration not available via Mistral Vibe MCP');
+        }
         
         // Calculate stats
         setStats({
@@ -57,8 +66,8 @@ const DashboardPage: React.FC = () => {
           publishedPosts: postsResponse.data.filter(p => p.status === 'published').length,
           totalUsers: 1, // Will be fetched from API
           activeIntegrations: {
-            asana: asanaStatus.connected,
-            buffer: bufferStatus.connected,
+            asana: asanaProjects.length > 0,
+            buffer: bufferProfiles.length > 0,
             mistral: mistralStatus.active,
           },
         });
@@ -184,16 +193,21 @@ const DashboardPage: React.FC = () => {
 
       {/* Integrations Status */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-secondary-900 mb-4">Intégrations</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-secondary-900">Intégrations</h3>
+          <p className="text-sm text-secondary-500">
+            Toutes les intégrations sont gérées via Mistral Vibe MCP
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Brain size={16} className="text-purple-600" />
               </div>
               <div>
-                <p className="font-medium text-secondary-900">Mistral Vibe</p>
-                <p className="text-xs text-secondary-500">Génération de contenu IA</p>
+                <p className="font-medium text-secondary-900">Mistral Vibe MCP</p>
+                <p className="text-xs text-secondary-500">Proxy unique pour toutes les intégrations</p>
               </div>
             </div>
             {mistralStatus.active ? (
@@ -203,7 +217,7 @@ const DashboardPage: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Plug size={16} className="text-blue-600" />
@@ -213,14 +227,14 @@ const DashboardPage: React.FC = () => {
                 <p className="text-xs text-secondary-500">Publication réseaux sociaux</p>
               </div>
             </div>
-            {bufferStatus.connected ? (
-              <span className="badge badge-success">Connecté</span>
+            {bufferProfiles.length > 0 ? (
+              <span className="badge badge-success">{bufferProfiles.length} profils</span>
             ) : (
-              <span className="badge badge-warning">Non connecté</span>
+              <span className="badge badge-warning">Aucun profil</span>
             )}
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Users size={16} className="text-orange-600" />
@@ -230,13 +244,18 @@ const DashboardPage: React.FC = () => {
                 <p className="text-xs text-secondary-500">Gestion des tâches</p>
               </div>
             </div>
-            {asanaStatus.connected ? (
-              <span className="badge badge-success">Connecté</span>
+            {asanaProjects.length > 0 ? (
+              <span className="badge badge-success">{asanaProjects.length} projets</span>
             ) : (
-              <span className="badge badge-warning">Non connecté</span>
+              <span className="badge badge-warning">Aucun projet</span>
             )}
           </div>
         </div>
+        <p className="text-sm text-secondary-500 mt-4 flex items-center gap-2">
+          <Info size={16} />
+          Toutes les intégrations sont gérées automatiquement via Mistral Vibe MCP.
+          Aucune configuration manuelle n'est nécessaire.
+        </p>
       </div>
 
       {/* Recent Posts */}

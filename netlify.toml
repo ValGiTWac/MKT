@@ -7,6 +7,13 @@
   NODE_VERSION = "18"
   NPM_FLAGS = "--include=dev"
 
+[context.production.environment]
+  MISTRAL_API_KEY = "@MISTRAL_API_KEY"
+  MISTRAL_API_URL = "https://api.mistral.ai/v1"
+  MISTRAL_VIBE_MCP_URL = "@MISTRAL_VIBE_MCP_URL"
+  JWT_SECRET = "@JWT_SECRET"
+  MONGODB_URI = "@MONGODB_URI"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"

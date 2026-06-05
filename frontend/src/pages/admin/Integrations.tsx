@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { bufferService } from '@/services/bufferService';
-import { asanaService } from '@/services/asanaService';
-import { mistralService } from '@/services/mistralService';
+import { mistralService, BufferProfilesResponse, AsanaProjectsResponse } from '@/services/mistralService';
+import { BufferProfile, AsanaProject } from '@/types';
 import Button from '@/components/Button';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import {
@@ -11,13 +10,12 @@ import {
   Users,
   Brain,
   Check,
-  X,
-  Link,
-  Unlink,
   Settings,
   BarChart3,
   Calendar,
   Clock,
+  Link,
+  Info,
 } from 'lucide-react';
 
 const IntegrationsPage: React.FC = () => {
@@ -25,23 +23,13 @@ const IntegrationsPage: React.FC = () => {
   const { addNotification } = useNotifications();
   
   const [isLoading, setIsLoading] = useState(true);
-  const [bufferStatus, setBufferStatus] = useState<{
-    active: boolean;
-    connected: boolean;
-    profiles?: { id: string; platform: string; name: string }[];
-  }>({ active: false, connected: false });
-  const [asanaStatus, setAsanaStatus] = useState<{
-    active: boolean;
-    connected: boolean;
-    workspaceId?: string;
-    userId?: string;
-    projects?: { id: string; name: string }[];
-  }>({ active: false, connected: false });
   const [mistralStatus, setMistralStatus] = useState<{
     active: boolean;
     model?: string;
   }>({ active: false });
   
+  const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([]);
+  const [asanaProjects, setAsanaProjects] = useState<AsanaProject[]>([]);
   const [bufferAnalytics, setBufferAnalytics] = useState<{
     totalPosts: number;
     engagement: number;
@@ -67,113 +55,29 @@ const IntegrationsPage: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Fetch Buffer status and data
-      const bufferStatus = await bufferService.checkStatus();
-      setBufferStatus(bufferStatus);
-      
-      if (bufferStatus.connected) {
-        try {
-          const profiles = await bufferService.getProfiles();
-          setBufferStatus({ ...bufferStatus, profiles });
-          
-          const analytics = await bufferService.getAnalytics(30);
-          setBufferAnalytics(analytics);
-        } catch (error) {
-          console.error('Failed to fetch Buffer data:', error);
-        }
-      }
-
-      // Fetch Asana status and data
-      const asanaStatus = await asanaService.checkStatus();
-      setAsanaStatus(asanaStatus);
-      
-      if (asanaStatus.connected) {
-        try {
-          const projects = await asanaService.getProjects();
-          setAsanaStatus({ ...asanaStatus, projects });
-          
-          const analytics = await asanaService.getAnalytics(30);
-          setAsanaAnalytics(analytics);
-        } catch (error) {
-          console.error('Failed to fetch Asana data:', error);
-        }
-      }
-
-      // Fetch Mistral status
+      // Fetch Mistral Vibe status
       const mistralStatus = await mistralService.checkIntegration();
       setMistralStatus(mistralStatus);
+
+      // Fetch Buffer profiles via Mistral Vibe MCP
+      try {
+        const bufferResponse = await mistralService.getBufferProfiles();
+        setBufferProfiles(bufferResponse.profiles || []);
+      } catch (error) {
+        console.log('Buffer integration not available via Mistral Vibe MCP');
+      }
+
+      // Fetch Asana projects via Mistral Vibe MCP
+      try {
+        const asanaResponse = await mistralService.getAsanaProjects();
+        setAsanaProjects(asanaResponse.projects || []);
+      } catch (error) {
+        console.log('Asana integration not available via Mistral Vibe MCP');
+      }
     } catch (error) {
       console.error('Failed to fetch integrations data:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleBufferConnect = async () => {
-    try {
-      const { url } = await bufferService.connectBuffer();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Failed to connect Buffer:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la connexion à Buffer',
-      });
-    }
-  };
-
-  const handleBufferDisconnect = async () => {
-    try {
-      await bufferService.disconnectBuffer();
-      setBufferStatus({ ...bufferStatus, connected: false, profiles: undefined });
-      setBufferAnalytics(null);
-      addNotification({
-        type: 'success',
-        title: 'Buffer déconnecté',
-        message: 'Buffer a été déconnecté avec succès',
-      });
-    } catch (error) {
-      console.error('Failed to disconnect Buffer:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la déconnexion de Buffer',
-      });
-    }
-  };
-
-  const handleAsanaConnect = async () => {
-    try {
-      const { url } = await asanaService.connectAsana();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Failed to connect Asana:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la connexion à Asana',
-      });
-    }
-  };
-
-  const handleAsanaDisconnect = async () => {
-    try {
-      await asanaService.disconnectAsana();
-      setAsanaStatus({ ...asanaStatus, connected: false, projects: undefined });
-      setAsanaAnalytics(null);
-      addNotification({
-        type: 'success',
-        title: 'Asana déconnecté',
-        message: 'Asana a été déconnecté avec succès',
-      });
-    } catch (error) {
-      console.error('Failed to disconnect Asana:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la déconnexion de Asana',
-      });
     }
   };
 
@@ -193,7 +97,7 @@ const IntegrationsPage: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-secondary-900">Gestion des intégrations</h1>
         <p className="text-secondary-500">
-          Configurez et gérez les intégrations avec les services externes
+          Toutes les intégrations sont gérées via Mistral Vibe MCP
         </p>
       </div>
 
@@ -203,15 +107,15 @@ const IntegrationsPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Mistral Vibe */}
-          <div className="card">
+          {/* Mistral Vibe - Main Integration */}
+          <div className="card border-2 border-purple-200 bg-purple-50">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <Brain size={24} className="text-purple-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-secondary-900">Mistral Vibe</h2>
-                <p className="text-secondary-500">Génération de contenu IA</p>
+                <h2 className="text-xl font-semibold text-secondary-900">Mistral Vibe MCP</h2>
+                <p className="text-secondary-500">Proxy unique pour toutes les intégrations</p>
               </div>
             </div>
             
@@ -231,7 +135,8 @@ const IntegrationsPage: React.FC = () => {
                   )}
                 </div>
                 <p className="text-sm text-secondary-500 mt-2">
-                  Mistral Vibe est utilisé pour la génération, traduction et optimisation de contenu.
+                  Mistral Vibe MCP gère toutes les connexions à Buffer et Asana.
+                  Aucune configuration manuelle n'est nécessaire.
                 </p>
               </div>
               
@@ -240,7 +145,7 @@ const IntegrationsPage: React.FC = () => {
                 <ul className="space-y-2 text-secondary-600">
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-600" />
-                    Génération de contenu
+                    Génération de contenu IA
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={16} className="text-green-600" />
@@ -258,20 +163,28 @@ const IntegrationsPage: React.FC = () => {
                     <Check size={16} className="text-green-600" />
                     Analyse de sentiment
                   </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-600" />
+                    Intégration Buffer (via MCP)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-green-600" />
+                    Intégration Asana (via MCP)
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          {/* Buffer */}
-          <div className="card">
+          {/* Buffer via Mistral Vibe MCP */}
+          <div className="card border-2 border-blue-200 bg-blue-50">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Plug size={24} className="text-blue-600" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-secondary-900">Buffer</h2>
-                <p className="text-secondary-500">Publication sur les réseaux sociaux</p>
+                <p className="text-secondary-500">Publication sur les réseaux sociaux via Mistral Vibe MCP</p>
               </div>
             </div>
             
@@ -279,43 +192,31 @@ const IntegrationsPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-medium text-secondary-900 mb-2">Statut</h3>
                 <div className="flex items-center gap-2 mb-4">
-                  {bufferStatus.connected ? (
-                    <span className="badge badge-success">Connecté</span>
+                  {bufferProfiles.length > 0 ? (
+                    <span className="badge badge-success">Connecté ({bufferProfiles.length} profils)</span>
                   ) : (
-                    <span className="badge badge-warning">Non connecté</span>
+                    <span className="badge badge-warning">Aucun profil connecté</span>
                   )}
                 </div>
                 
-                {bufferStatus.connected ? (
-                  <Button
-                    variant="danger"
-                    onClick={handleBufferDisconnect}
-                    leftIcon={<Unlink size={16} />}
-                  >
-                    Déconnecter
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={handleBufferConnect}
-                    leftIcon={<Link size={16} />}
-                  >
-                    Connecter à Buffer
-                  </Button>
-                )}
+                <p className="text-sm text-blue-600">
+                  <Info size={16} className="inline mr-1" />
+                  La connexion est gérée automatiquement par Mistral Vibe MCP.
+                  Aucune action manuelle requise.
+                </p>
                 
-                {bufferStatus.profiles && bufferStatus.profiles.length > 0 && (
+                {bufferProfiles.length > 0 && (
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-secondary-600 mb-2">
-                      Profils connectés ({bufferStatus.profiles.length})
+                      Profils disponibles ({bufferProfiles.length})
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {bufferStatus.profiles.map((profile) => (
+                      {bufferProfiles.map((profile) => (
                         <span
                           key={profile.id}
-                          className="inline-flex items-center px-3 py-1 bg-secondary-100 text-secondary-800 text-sm font-medium rounded-full"
+                          className="inline-flex items-center px-3 py-1 bg-white text-secondary-800 text-sm font-medium rounded-full border border-blue-200"
                         >
-                          {profile.name}
+                          {profile.name || profile.platformUsername} ({profile.platform})
                         </span>
                       ))}
                     </div>
@@ -323,51 +224,39 @@ const IntegrationsPage: React.FC = () => {
                 )}
               </div>
               
-              {bufferAnalytics && (
-                <div>
-                  <h3 className="text-lg font-medium text-secondary-900 mb-2">
-                    Statistiques (30 derniers jours)
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {bufferAnalytics.totalPosts}
-                      </div>
-                      <div className="text-sm text-secondary-500">Posts publiés</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {bufferAnalytics.engagement}
-                      </div>
-                      <div className="text-sm text-secondary-500">Engagements</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {bufferAnalytics.reach}
-                      </div>
-                      <div className="text-sm text-secondary-500">Portée</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {Object.keys(bufferAnalytics.byPlatform).length}
-                      </div>
-                      <div className="text-sm text-secondary-500">Plateformes</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-medium text-secondary-900 mb-2">Fonctionnalités</h3>
+                <ul className="space-y-2 text-secondary-600">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-blue-600" />
+                    Publication instantanée
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-blue-600" />
+                    Planification de posts
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-blue-600" />
+                    Multi-plateformes (Facebook, Twitter, LinkedIn, Instagram, TikTok)
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-blue-600" />
+                    Gestion des médias
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          {/* Asana */}
-          <div className="card">
+          {/* Asana via Mistral Vibe MCP */}
+          <div className="card border-2 border-orange-200 bg-orange-50">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
                 <Users size={24} className="text-orange-600" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-secondary-900">Asana</h2>
-                <p className="text-secondary-500">Gestion des tâches et projets</p>
+                <p className="text-secondary-500">Gestion des tâches et projets via Mistral Vibe MCP</p>
               </div>
             </div>
             
@@ -375,41 +264,29 @@ const IntegrationsPage: React.FC = () => {
               <div>
                 <h3 className="text-lg font-medium text-secondary-900 mb-2">Statut</h3>
                 <div className="flex items-center gap-2 mb-4">
-                  {asanaStatus.connected ? (
-                    <span className="badge badge-success">Connecté</span>
+                  {asanaProjects.length > 0 ? (
+                    <span className="badge badge-success">Connecté ({asanaProjects.length} projets)</span>
                   ) : (
-                    <span className="badge badge-warning">Non connecté</span>
+                    <span className="badge badge-warning">Aucun projet disponible</span>
                   )}
                 </div>
                 
-                {asanaStatus.connected ? (
-                  <Button
-                    variant="danger"
-                    onClick={handleAsanaDisconnect}
-                    leftIcon={<Unlink size={16} />}
-                  >
-                    Déconnecter
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    onClick={handleAsanaConnect}
-                    leftIcon={<Link size={16} />}
-                  >
-                    Connecter à Asana
-                  </Button>
-                )}
+                <p className="text-sm text-orange-600">
+                  <Info size={16} className="inline mr-1" />
+                  La connexion est gérée automatiquement par Mistral Vibe MCP.
+                  Aucune action manuelle requise.
+                </p>
                 
-                {asanaStatus.projects && asanaStatus.projects.length > 0 && (
+                {asanaProjects.length > 0 && (
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-secondary-600 mb-2">
-                      Projets disponibles ({asanaStatus.projects.length})
+                      Projets disponibles ({asanaProjects.length})
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {asanaStatus.projects.map((project) => (
+                      {asanaProjects.map((project) => (
                         <span
                           key={project.id}
-                          className="inline-flex items-center px-3 py-1 bg-secondary-100 text-secondary-800 text-sm font-medium rounded-full"
+                          className="inline-flex items-center px-3 py-1 bg-white text-secondary-800 text-sm font-medium rounded-full border border-orange-200"
                         >
                           {project.name}
                         </span>
@@ -419,39 +296,27 @@ const IntegrationsPage: React.FC = () => {
                 )}
               </div>
               
-              {asanaAnalytics && (
-                <div>
-                  <h3 className="text-lg font-medium text-secondary-900 mb-2">
-                    Statistiques (30 derniers jours)
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {asanaAnalytics.totalTasks}
-                      </div>
-                      <div className="text-sm text-secondary-500">Tâches totales</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-green-600">
-                        {asanaAnalytics.completedTasks}
-                      </div>
-                      <div className="text-sm text-secondary-500">Tâches complétées</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {Math.round((asanaAnalytics.completedTasks / asanaAnalytics.totalTasks) * 100) || 0}%
-                      </div>
-                      <div className="text-sm text-secondary-500">Taux de complétion</div>
-                    </div>
-                    <div className="bg-secondary-50 rounded-lg p-4">
-                      <div className="text-2xl font-bold text-secondary-900">
-                        {Object.keys(asanaAnalytics.byProject).length}
-                      </div>
-                      <div className="text-sm text-secondary-500">Projets</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-medium text-secondary-900 mb-2">Fonctionnalités</h3>
+                <ul className="space-y-2 text-secondary-600">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-orange-600" />
+                    Création de tâches
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-orange-600" />
+                    Association à des projets
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-orange-600" />
+                    Gestion des échéances
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} className="text-orange-600" />
+                    Suivi des statuts
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -465,7 +330,7 @@ const IntegrationsPage: React.FC = () => {
                   <Brain size={20} className="text-purple-600" />
                 </div>
                 <div className="flex-1">
-                  <div className="font-medium text-secondary-900">Mistral Vibe</div>
+                  <div className="font-medium text-secondary-900">Mistral Vibe MCP</div>
                   <div className="text-sm text-secondary-500">
                     {mistralStatus.active ? 'Actif' : 'Inactif'}
                   </div>
@@ -482,10 +347,10 @@ const IntegrationsPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="font-medium text-secondary-900">Buffer</div>
                   <div className="text-sm text-secondary-500">
-                    {bufferStatus.connected ? 'Connecté' : 'Non connecté'}
+                    {bufferProfiles.length > 0 ? `${bufferProfiles.length} profils` : 'Aucun profil'}
                   </div>
                 </div>
-                {bufferStatus.connected ? (
+                {bufferProfiles.length > 0 ? (
                   <span className="badge badge-success">OK</span>
                 ) : (
                   <span className="badge badge-warning">À configurer</span>
@@ -499,10 +364,10 @@ const IntegrationsPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="font-medium text-secondary-900">Asana</div>
                   <div className="text-sm text-secondary-500">
-                    {asanaStatus.connected ? 'Connecté' : 'Non connecté'}
+                    {asanaProjects.length > 0 ? `${asanaProjects.length} projets` : 'Aucun projet'}
                   </div>
                 </div>
-                {asanaStatus.connected ? (
+                {asanaProjects.length > 0 ? (
                   <span className="badge badge-success">OK</span>
                 ) : (
                   <span className="badge badge-warning">À configurer</span>
@@ -514,11 +379,14 @@ const IntegrationsPage: React.FC = () => {
               <div className="flex items-start gap-3">
                 <Check size={20} className="text-primary-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-primary-900">Toutes les intégrations sont prêtes !</h3>
+                  <h3 className="font-semibold text-primary-900">Architecture simplifiée avec Mistral Vibe MCP</h3>
                   <p className="text-sm text-primary-700 mt-1">
-                    Votre plateforme WHISE MKT est configurée pour utiliser toutes les intégrations disponibles.
-                    Vous pouvez maintenant créer des posts, les optimiser avec Mistral Vibe, les publier via Buffer,
-                    et gérer les tâches dans Asana.
+                    Votre plateforme WHISE MKT utilise <strong>Mistral Vibe MCP</strong> comme intermédiaire unique.
+                    Toutes les intégrations avec Buffer et Asana sont gérées automatiquement.
+                    Aucune clé API ou configuration manuelle n'est nécessaire.
+                  </p>
+                  <p className="text-sm text-primary-700 mt-2">
+                    <strong>Avantages :</strong> Centralisation, sécurité renforcée, maintenance simplifiée.
                   </p>
                 </div>
               </div>

@@ -5,6 +5,8 @@ import { asyncHandler } from '../middleware/errorHandler';
 
 const router = express.Router();
 
+// ==================== Mistral Core Features ====================
+
 // @route   GET /api/mistral/status
 // @desc    Check if Mistral integration is active
 // @access  Private
@@ -202,6 +204,149 @@ router.post(
 
     const result = await mistralService.analyzeSentiment(text);
 
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// ==================== Buffer Integration via Mistral Vibe MCP ====================
+
+// @route   GET /api/mistral/buffer/profiles
+// @desc    Get all Buffer profiles connected via Mistral Vibe MCP
+// @access  Private
+router.get(
+  '/buffer/profiles',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const result = await mistralService.getBufferProfiles();
+    
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// @route   POST /api/mistral/buffer/publish
+// @desc    Publish a post to Buffer via Mistral Vibe MCP
+// @access  Private
+router.post(
+  '/buffer/publish',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { post, profileId } = req.body;
+    
+    if (!post || !post.text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Post text is required',
+      });
+    }
+
+    const result = await mistralService.publishToBuffer({ post, profileId });
+    
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// @route   POST /api/mistral/buffer/schedule
+// @desc    Schedule a post to Buffer via Mistral Vibe MCP
+// @access  Private
+router.post(
+  '/buffer/schedule',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { post, profileId, scheduleAt } = req.body;
+    
+    if (!post || !post.text) {
+      return res.status(400).json({
+        success: false,
+        error: 'Post text is required',
+      });
+    }
+
+    if (!scheduleAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'Schedule time is required',
+      });
+    }
+
+    const result = await mistralService.scheduleBufferPost({ post, profileId, scheduleAt });
+    
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// ==================== Asana Integration via Mistral Vibe MCP ====================
+
+// @route   GET /api/mistral/asana/projects
+// @desc    Get all Asana projects connected via Mistral Vibe MCP
+// @access  Private
+router.get(
+  '/asana/projects',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const result = await mistralService.getAsanaProjects();
+    
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// @route   POST /api/mistral/asana/task
+// @desc    Create a task in Asana via Mistral Vibe MCP
+// @access  Private
+router.post(
+  '/asana/task',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { task, projectId } = req.body;
+    
+    if (!task || !task.title) {
+      return res.status(400).json({
+        success: false,
+        error: 'Task title is required',
+      });
+    }
+
+    const result = await mistralService.createAsanaTask({ task, projectId });
+    
+    res.json({
+      success: true,
+      data: result,
+    });
+  })
+);
+
+// @route   POST /api/mistral/asana/task-from-post
+// @desc    Create a task from a post in Asana via Mistral Vibe MCP
+// @access  Private
+router.post(
+  '/asana/task-from-post',
+  authenticate,
+  asyncHandler(async (req, res) => {
+    const { postId, projectId } = req.body;
+    
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Post ID is required',
+      });
+    }
+
+    const result = await mistralService.createAsanaTaskFromPost(postId, projectId);
+    
     res.json({
       success: true,
       data: result,

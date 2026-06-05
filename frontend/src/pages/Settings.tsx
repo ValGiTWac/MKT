@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { authService } from '@/services/authService';
-import { bufferService } from '@/services/bufferService';
-import { asanaService } from '@/services/asanaService';
 import { mistralService } from '@/services/mistralService';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
@@ -11,13 +9,13 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import {
   User,
   Settings,
-  Plug,
-  Users,
   Brain,
   Check,
   X,
   Key,
   Shield,
+  Plug,
+  Users,
 } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
@@ -25,8 +23,6 @@ const SettingsPage: React.FC = () => {
   const { addNotification } = useNotifications();
   
   const [isLoading, setIsLoading] = useState(true);
-  const [bufferStatus, setBufferStatus] = useState<{ active: boolean; connected: boolean }>({ active: false, connected: false });
-  const [asanaStatus, setAsanaStatus] = useState<{ active: boolean; connected: boolean }>({ active: false, connected: false });
   const [mistralStatus, setMistralStatus] = useState<{ active: boolean; model?: string }>({ active: false });
   
   const [profileData, setProfileData] = useState({
@@ -53,13 +49,7 @@ const SettingsPage: React.FC = () => {
           });
         }
 
-        // Fetch integration statuses
-        const bufferStatus = await bufferService.checkStatus();
-        setBufferStatus(bufferStatus);
-        
-        const asanaStatus = await asanaService.checkStatus();
-        setAsanaStatus(asanaStatus);
-        
+        // Fetch Mistral Vibe integration status
         const mistralStatus = await mistralService.checkIntegration();
         setMistralStatus(mistralStatus);
       } catch (error) {
@@ -136,72 +126,6 @@ const SettingsPage: React.FC = () => {
       });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleBufferConnect = async () => {
-    try {
-      const { url } = await bufferService.connectBuffer();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Failed to connect Buffer:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la connexion à Buffer',
-      });
-    }
-  };
-
-  const handleBufferDisconnect = async () => {
-    try {
-      await bufferService.disconnectBuffer();
-      setBufferStatus({ ...bufferStatus, connected: false });
-      addNotification({
-        type: 'success',
-        title: 'Buffer déconnecté',
-        message: 'Buffer a été déconnecté avec succès',
-      });
-    } catch (error) {
-      console.error('Failed to disconnect Buffer:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la déconnexion de Buffer',
-      });
-    }
-  };
-
-  const handleAsanaConnect = async () => {
-    try {
-      const { url } = await asanaService.connectAsana();
-      window.location.href = url;
-    } catch (error) {
-      console.error('Failed to connect Asana:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la connexion à Asana',
-      });
-    }
-  };
-
-  const handleAsanaDisconnect = async () => {
-    try {
-      await asanaService.disconnectAsana();
-      setAsanaStatus({ ...asanaStatus, connected: false });
-      addNotification({
-        type: 'success',
-        title: 'Asana déconnecté',
-        message: 'Asana a été déconnecté avec succès',
-      });
-    } catch (error) {
-      console.error('Failed to disconnect Asana:', error);
-      addNotification({
-        type: 'error',
-        title: 'Erreur',
-        message: 'Échec de la déconnexion de Asana',
-      });
     }
   };
 
@@ -314,87 +238,95 @@ const SettingsPage: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          {/* Mistral Vibe */}
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Brain size={20} className="text-purple-600" />
+          {/* Mistral Vibe - Main Integration */}
+          <div className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Brain size={20} className="text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-secondary-900">Mistral Vibe</h3>
+                  <p className="text-sm text-secondary-500">Génération de contenu IA et intégrations</p>
+                  <p className="text-xs text-secondary-400 mt-1">
+                    Mistral Vibe MCP gère les connexions à Buffer et Asana.
+                    Aucune configuration supplémentaire nécessaire.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-secondary-900">Mistral Vibe</h3>
-                <p className="text-sm text-secondary-500">Génération de contenu IA</p>
-              </div>
+              {mistralStatus.active ? (
+                <div className="flex items-center gap-2">
+                  <span className="badge badge-success">Actif</span>
+                  {mistralStatus.model && (
+                    <span className="text-xs text-secondary-500 bg-secondary-100 px-2 py-1 rounded">
+                      {mistralStatus.model}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="badge badge-error">Inactif</span>
+              )}
             </div>
-            {mistralStatus.active ? (
-              <span className="badge badge-success">Actif</span>
-            ) : (
-              <span className="badge badge-error">Inactif</span>
-            )}
           </div>
 
-          {/* Buffer */}
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+          {/* Buffer via Mistral Vibe */}
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Plug size={20} className="text-blue-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-secondary-900">Buffer</h3>
                 <p className="text-sm text-secondary-500">Publication réseaux sociaux</p>
               </div>
             </div>
-            {bufferStatus.connected ? (
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleBufferDisconnect}
-                leftIcon={<X size={16} />}
-              >
-                Déconnecter
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleBufferConnect}
-                leftIcon={<Plug size={16} />}
-              >
-                Connecter
-              </Button>
-            )}
+            <p className="text-xs text-blue-600 mt-2">
+              Géré par Mistral Vibe MCP - Aucune configuration requise
+            </p>
           </div>
 
-          {/* Asana */}
-          <div className="flex items-center justify-between p-4 bg-secondary-50 rounded-lg">
+          {/* Asana via Mistral Vibe */}
+          <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Users size={20} className="text-orange-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-secondary-900">Asana</h3>
                 <p className="text-sm text-secondary-500">Gestion des tâches</p>
               </div>
             </div>
-            {asanaStatus.connected ? (
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleAsanaDisconnect}
-                leftIcon={<X size={16} />}
-              >
-                Déconnecter
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleAsanaConnect}
-                leftIcon={<Plug size={16} />}
-              >
-                Connecter
-              </Button>
-            )}
+            <p className="text-xs text-orange-600 mt-2">
+              Géré par Mistral Vibe MCP - Aucune configuration requise
+            </p>
           </div>
+        </div>
+      </div>
+
+      {/* Information Section */}
+      <div className="card bg-secondary-50">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings size={20} className="text-secondary-600" />
+          <h2 className="text-lg font-semibold text-secondary-900">Comment ça marche ?</h2>
+        </div>
+        <div className="space-y-4 text-sm text-secondary-600">
+          <p>
+            <strong>Mistral Vibe MCP</strong> agit comme intermédiaire unique pour toutes vos intégrations.
+          </p>
+          <ul className="list-disc list-inside space-y-2">
+            <li>
+              <strong>Buffer</strong> : Mistral Vibe gère la connexion OAuth et la publication sur vos réseaux sociaux.
+            </li>
+            <li>
+              <strong>Asana</strong> : Mistral Vibe crée automatiquement des tâches dans vos projets Asana.
+            </li>
+            <li>
+              <strong>IA</strong> : Génération, traduction, optimisation et correction de contenu.
+            </li>
+          </ul>
+          <p>
+            Aucune clé API ou configuration manuelle n'est nécessaire. Tout est géré automatiquement via Mistral Vibe.
+          </p>
         </div>
       </div>
 

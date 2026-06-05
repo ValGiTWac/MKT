@@ -41,29 +41,41 @@ export interface Post {
   };
 }
 
-// Asana Task Interface
-export interface AsanaTask {
+// Asana Types
+export interface AsanaProject {
   id: string;
   name: string;
   description?: string;
-  assignee?: string;
-  dueDate?: string;
-  status: 'todo' | 'in_progress' | 'done' | 'archived';
-  projectId?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Buffer Post Interface
-export interface BufferPost {
+export interface AsanaTask {
   id: string;
-  text: string;
-  media?: string[];
+  title: string;
+  description?: string;
+  dueDate?: string;
+  assignee?: string;
+  tags?: string[];
+  projectId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Buffer Types
+export interface BufferProfile {
+  id: string;
   platform: SocialPlatform;
-  scheduledAt: string;
-  status: 'queued' | 'published' | 'failed';
-  postId?: string;
-  createdAt: string;
+  platformUsername: string;
+  name?: string;
+  avatar?: string;
+  connectedAt?: string;
+}
+
+export interface BufferPost {
+  text: string;
+  mediaUrls?: string[];
+  platform?: SocialPlatform;
 }
 
 // Mistral Vibe Request/Response
